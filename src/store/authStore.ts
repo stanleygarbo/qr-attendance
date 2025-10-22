@@ -1,5 +1,5 @@
 // store/authStore.ts
-import { proxy } from "valtio";
+import { proxy, ref } from "valtio";
 import {
   onAuthStateChanged,
   type User,
@@ -23,7 +23,7 @@ export const authStore = proxy<AuthState>({
 // Auth state listener
 onAuthStateChanged(auth, (firebaseUser) => {
   console.log("changed", firebaseUser);
-  authStore.user = firebaseUser;
+  authStore.user = firebaseUser ? ref(firebaseUser) : null;
   authStore.loading = false;
 });
 
