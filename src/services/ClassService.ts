@@ -13,7 +13,9 @@ export default class ClassService {
     const data = await this.classRepo.getById(id);
     if (!data) throw new Error("Student not found");
 
-    return this.classRepo.add(data);
+    const { id: _, ...rest } = data;
+
+    return this.classRepo.add(rest);
   }
 
   getAll() {

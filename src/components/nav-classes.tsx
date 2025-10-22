@@ -30,7 +30,7 @@ export function NavClasses({
       <SidebarGroupLabel>Classes</SidebarGroupLabel>
       <SidebarMenu>
         {classes.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem key={item.id}>
             <SidebarMenuButton isActive={params.id === item.id} asChild>
               <Link to={item.url}>
                 <item.icon />

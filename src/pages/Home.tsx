@@ -27,10 +27,20 @@ const Home = () => {
         </div>
       )}
       <div className="relative">
-        <div className="absolute right-0 -top-12">
-          <ClassDialog />
-        </div>
+        {!!query.data?.length && (
+          <div className="absolute right-0 -top-12">
+            <ClassDialog />
+          </div>
+        )}
         <div className="flex mt-4 flex-wrap gap-5">
+          {!query.data?.length && !query.isLoading && (
+            <div className="w-full h-60 flex flex-col items-center justify-center">
+              <p className="mb-4 w-82 text-center text-gray-500">
+                Get started in tracking attendance by creating a class.
+              </p>
+              <ClassDialog />
+            </div>
+          )}
           {query.data?.map((i, idx) => (
             <div
               key={i.id}
