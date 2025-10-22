@@ -51,35 +51,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { Link, useNavigate } from "react-router-dom";
-
-const data: Student[] = [
-  {
-    usn: "19001397900",
-    name: "Stanley Garbo",
-  },
-  {
-    usn: "3u1reuv4",
-    name: "Abe Kadabe",
-  },
-  {
-    usn: "derv1ws0",
-    name: "Monserrat Nos",
-  },
-  {
-    usn: "5kma53ae",
-    name: "Silas Gamis",
-  },
-  {
-    usn: "bhqecj4p",
-    name: "carmella wan",
-  },
-];
-
-export type Student = {
-  usn: string;
-  name: string;
-};
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useStudentQuery } from "@/hooks/useStudentQuery";
+import type { Student } from "@/models/Student";
+import useStudentMutations from "@/hooks/useStudentMutations";
 
 export const columns: ColumnDef<Student>[] = [
   {
@@ -155,6 +130,8 @@ export const columns: ColumnDef<Student>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const student = row.original;
+      const { deletefromClass } = useStudentMutations();
+      const params = useParams();
 
       return (
         <DropdownMenu>
@@ -172,10 +149,20 @@ export const columns: ColumnDef<Student>[] = [
               Copy USN
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <Link to={"/?qr=" + student.usn}>
+            <Link to={`?usn=${student.usn}&name=${student.name}`}>
               <DropdownMenuItem>View QR</DropdownMenuItem>
             </Link>
             <DropdownMenuItem>View attendance details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                deletefromClass.mutate({
+                  studentId: student.usn,
+                  classId: params.id || "",
+                });
+              }}
+            >
+              Remove from class
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -192,9 +179,11 @@ export default function DataTableDensityDemo() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const params = useParams();
+  const studentQuery = useStudentQuery(params?.id || "");
 
   const table = useReactTable({
-    data,
+    data: studentQuery.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -213,7 +202,6 @@ export default function DataTableDensityDemo() {
   });
 
   const navigate = useNavigate();
-
   return (
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
@@ -223,12 +211,12 @@ export default function DataTableDensityDemo() {
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm bg-background"
         />
 
         <div className="flex ml-auto gap-4">
           <Select value={density} onValueChange={setDensity}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-background">
               <SelectValue placeholder="Density" />
             </SelectTrigger>
             <SelectContent>
@@ -268,7 +256,7 @@ export default function DataTableDensityDemo() {
 
               const selected = [];
               for (const i of indexes) {
-                selected.push(data[i]);
+                selected.push(studentQuery.data?.[i]);
               }
               navigate("/qr-list", { state: selected });
             }}
@@ -278,7 +266,7 @@ export default function DataTableDensityDemo() {
           </Button>
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-background">
         <Table
           className={cn({
             "[&_td]:py-px [&_th]:py-px": density === "compact",
@@ -327,7 +315,11 @@ export default function DataTableDensityDemo() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {studentQuery.isFetching ? (
+                    <img src="/loading.svg" className="mx-auto" />
+                  ) : (
+                    "No results."
+                  )}
                 </TableCell>
               </TableRow>
             )}

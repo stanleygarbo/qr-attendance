@@ -1,7 +1,6 @@
 // store/authStore.ts
 import { proxy } from "valtio";
 import {
-  getAuth,
   onAuthStateChanged,
   type User,
   signOut,
@@ -9,6 +8,7 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
 } from "firebase/auth";
+import { auth } from "@/config/firebase";
 
 interface AuthState {
   user: User | null;
@@ -20,10 +20,9 @@ export const authStore = proxy<AuthState>({
   loading: true,
 });
 
-const auth = getAuth();
-
 // Auth state listener
 onAuthStateChanged(auth, (firebaseUser) => {
+  console.log("changed", firebaseUser);
   authStore.user = firebaseUser;
   authStore.loading = false;
 });
@@ -58,5 +57,11 @@ export const authActions = {
     }
   },
 
-  logout: () => signOut(auth),
+  logout: async () => {
+    try {
+      await signOut(auth);
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  },
 };

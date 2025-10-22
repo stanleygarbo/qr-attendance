@@ -30,8 +30,8 @@ export function LoginForm({
       console.log(email, password);
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/");
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error(err.message);
     }
   };
 
