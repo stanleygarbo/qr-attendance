@@ -6,6 +6,7 @@ import { useIsMutating } from "@tanstack/react-query";
 import ClassDropDownMenu from "@/components/ClassDropDownMenu";
 import { useClassQuery } from "@/hooks/useClassQuery";
 import ClassDialog from "@/components/ClassDialog";
+import { useNavigate } from "react-router-dom";
 
 const patterns = [
   "pattern-grid-md",
@@ -18,6 +19,7 @@ const patterns = [
 const Home = () => {
   const query = useClassQuery();
   const isMutating = useIsMutating({ mutationKey: ["class", "delete"] });
+  const navigate = useNavigate();
 
   return (
     <>
@@ -43,8 +45,11 @@ const Home = () => {
           )}
           {query.data?.map((i, idx) => (
             <div
+              onClick={() => {
+                navigate("/class/" + i.id);
+              }}
               key={i.id}
-              className="border rounded-md bg-background overflow-hidden"
+              className="border rounded-md bg-background overflow-hidden cursor-pointer"
             >
               <div
                 className={cn(

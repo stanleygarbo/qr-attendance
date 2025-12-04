@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Class from "./pages/Class";
 import ScanQr from "./pages/ScanQr";
 import { AppProvider } from "./context/AppContext";
+import { Toaster } from "sonner";
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,8 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AppProvider>
+        <Toaster />
+
         <RouterProvider router={router} />
       </AppProvider>
     </QueryClientProvider>

@@ -55,8 +55,16 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useStudentQuery } from "@/hooks/useStudentQuery";
 import type { Student } from "@/models/Student";
 import useStudentMutations from "@/hooks/useStudentMutations";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import dayjs from "dayjs";
 
-export const columns: ColumnDef<Student>[] = [
+export const columns: ColumnDef<
+  Student & { attendance: { date: string; status: string }[] }
+>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -101,9 +109,29 @@ export const columns: ColumnDef<Student>[] = [
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "s1",
-    header: () => <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>,
-    cell: () => <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>,
+    accessorKey: "attendance",
+    header: () => <div>Attendance</div>,
+    cell: ({ row }) => {
+      const attendanceArr = row.getValue("attendance") as {
+        date: string;
+        status: string;
+      }[];
+
+      return (
+        <div className="flex gap-3">
+          {attendanceArr.map((i) => (
+            <div key={i.date}>
+              <Tooltip>
+                <TooltipTrigger>{i.status}</TooltipTrigger>
+                <TooltipContent>
+                  <p>{dayjs(i.date).format("ddd MMM DD, YYYY")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          ))}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "s2",

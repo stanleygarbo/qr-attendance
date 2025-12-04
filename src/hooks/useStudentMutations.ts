@@ -1,7 +1,9 @@
 import { useAppServices } from "@/context/AppContext";
+import type { Class } from "@/models/Class";
 import type { Student } from "@/models/Student";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const useStudentMutations = () => {
   const { studentService } = useAppServices();
@@ -39,7 +41,18 @@ const useStudentMutations = () => {
     add: useMutation({
       async mutationFn(data: Omit<Student, "id" | "createdAt" | "userId">) {
         if (!params.id) throw new Error("Invalid Class");
-        console.log(data.name);
+
+        const classData = queryClient.getQueryData(["class", params.id]) as
+          | Class
+          | undefined;
+
+        if (classData) {
+          for (const i of classData.students) {
+            if (i.id === data.usn) {
+              throw new Error(`${data.name} already exists in this class`);
+            }
+          }
+        }
 
         const res = await studentService.add({
           usn: data.usn,
@@ -48,6 +61,9 @@ const useStudentMutations = () => {
         });
 
         return res;
+      },
+      onError(err) {
+        toast(err.message);
       },
       async onSuccess(data) {
         await queryClient.setQueryData(

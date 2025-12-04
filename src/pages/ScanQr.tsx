@@ -1,78 +1,78 @@
 import AlertDialog from "@/components/AlertDialog";
 import { Button } from "@/components/ui/button";
-import { useAppServices } from "@/context/AppContext";
-import { useQuery } from "@tanstack/react-query";
-import { Scanner } from "@yudiel/react-qr-scanner";
+import { useAttendanceMutations } from "@/hooks/useAttendanceMutations";
+import { useAttendanceQuery } from "@/hooks/useAttendanceQuery";
+import { useClassQuery } from "@/hooks/useClassQuery";
+import { authStore } from "@/store/authStore";
+import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { QrCode, Trash2 } from "lucide-react";
+import { useCallback } from "react";
 import { useParams } from "react-router-dom";
+import dayjs from "dayjs";
 
 const ScanQr = () => {
   const params = useParams();
-  const { classService } = useAppServices();
+  const classQuery = useClassQuery(params.id || "");
+  const attendanceMutations = useAttendanceMutations();
+  const attendanceQuery = useAttendanceQuery(params.id || "");
 
-  const query = useQuery({
-    queryKey: ["class", params.id],
-    async queryFn() {
-      if (params.id) {
-        const data = await classService.getById(params.id);
-
-        return data;
-      }
-    },
-  });
+  const onScan = useCallback(async (result: IDetectedBarcode[]) => {
+    if (authStore.user?.uid && params.id) {
+      attendanceMutations.add.mutate({
+        classId: params.id,
+        studentId: result[0].rawValue,
+        userId: authStore.user.uid,
+        status: "present",
+      });
+    }
+  }, []);
 
   return (
     <div className="grid grid-cols-[300px_1fr] gap-10 mt-4">
-      <div className="w-[300px] rounded-xl overflow-hidden">
-        <Scanner onScan={(result) => console.log(result)} scanDelay={0} />
+      <div className="w-[300px] self-start rounded-xl overflow-hidden relative">
+        {attendanceMutations.add.isPending && (
+          <div className="w-full h-full absolute left-0 right-0 bg-black/50 z-50 flex items-center justify-center">
+            <img src="/loading.svg" className="invert" alt="" />
+          </div>
+        )}
+        <Scanner onScan={onScan} scanDelay={1} />
       </div>
       <div className="">
         <h1 className="text-2xl font-bold h-16 rounded-xl flex items-center">
-          {query.data?.section} - {query.data?.name}
+          {classQuery.data?.section} - {classQuery.data?.name}
         </h1>
 
         <div className="mt-4 w-[380px]">
-          <h2 className="">QR Logs</h2>
-          <div className="relative grid grid-cols-[32px_120px_1fr] items-center border rounded-md px-2 py-2 bg-white mt-2">
-            <QrCode />
-            <div>19001397900</div>
-            <div>Sun Oct 12 3:35 PM</div>
-            <AlertDialog>
-              <Button
-                variant={"secondary"}
-                className="absolute h-10 w-10 right-0 top-0"
+          <h2 className="">
+            {attendanceQuery.data ? "QR Logs" : "No attendance record."}
+          </h2>
+          {attendanceQuery.data?.map((i) => (
+            <div
+              key={i.id}
+              className="relative grid grid-cols-[32px_120px_1fr] items-center border rounded-md px-2 py-2 bg-white mt-2"
+            >
+              <QrCode />
+              <div>{i.studentRef.id}</div>
+              <div>
+                {dayjs(i.createdAt.toDate()).format("ddd MMM D h:mm A")}
+              </div>
+              <AlertDialog
+                onConfirm={() => {
+                  attendanceMutations.delete.mutate({
+                    attendanceId: i.id,
+                    classId: params.id || "",
+                  });
+                }}
               >
-                <Trash2 className="" />
-              </Button>
-            </AlertDialog>
-          </div>
-          <div className="relative grid grid-cols-[32px_120px_1fr] items-center border rounded-md px-2 py-2 bg-white mt-2">
-            <QrCode />
-            <div>19001397900</div>
-            <div>Sun Oct 12 3:35 PM</div>
-
-            <AlertDialog>
-              <Button
-                variant={"secondary"}
-                className="absolute h-10 w-10 right-0 top-0"
-              >
-                <Trash2 className="" />
-              </Button>
-            </AlertDialog>
-          </div>
-          <div className="grid grid-cols-[32px_120px_1fr_32px] relative items-center border rounded-md px-2 py-2 bg-white mt-2">
-            <QrCode />
-            <div>19001397900</div>
-            <div>Sun Oct 12 3:35 PM</div>
-            <AlertDialog>
-              <Button
-                variant={"secondary"}
-                className="absolute h-10 w-10 right-0 top-0"
-              >
-                <Trash2 className="" />
-              </Button>
-            </AlertDialog>
-          </div>
+                <Button
+                  variant={"secondary"}
+                  className="absolute h-10 w-10 right-0 top-0"
+                >
+                  <Trash2 size={20} />
+                </Button>
+              </AlertDialog>
+            </div>
+          ))}
         </div>
       </div>
     </div>

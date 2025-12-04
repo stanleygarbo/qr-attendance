@@ -12,7 +12,7 @@ export const ProtectedRoute = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex">
+    <div className="flex ">
       <SidebarProvider>
         <AppSidebar />
         <div className="p-4 w-full h-full pl-0">

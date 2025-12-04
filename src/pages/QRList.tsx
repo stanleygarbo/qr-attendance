@@ -1,19 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { useQrCode } from "@/hooks/useQrCode";
+import { useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { useReactToPrint } from "react-to-print";
 
 const QRList = () => {
   const { state } = useLocation();
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const studentList = state as { usn: string; name: string }[];
 
   return (
     <div>
-      <div className="w-[21cm] mx-auto no-print py-9">
-        <Button onClick={window.print}>Print A4</Button>
+      <div className="w-[21cm] mx-auto py-9">
+        <Button onClick={reactToPrintFn}>Print A4</Button>
       </div>
-      <main className="w-[21cm] h-[29.7cm] mx-auto grid grid-cols-[repeat(3,calc(21cm/3))] items-start grid-rows-[calc(29.7cm/4)]">
-        {studentList.map((i) => {
+      <main
+        ref={contentRef}
+        className="w-[21cm] printable h-[29.7cm] mx-auto grid grid-cols-[repeat(3,calc(21cm/3))] items-start grid-rows-[calc(29.7cm/4)]"
+      >
+        {studentList?.map((i) => {
           const qr = useQrCode({ data: i.usn, width: 212, height: 212 });
 
           return (
@@ -27,7 +35,6 @@ const QRList = () => {
           );
         })}
       </main>
-      <style> {`@media print {.no-print{display: none;}}`}</style>
     </div>
   );
 };

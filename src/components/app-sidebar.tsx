@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CircleUserRound,
-  Home,
-  LifeBuoy,
-  Notebook,
-  QrCode,
-  Send,
-} from "lucide-react";
+import { Home, LifeBuoy, Notebook, QrCode, Send } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 
@@ -59,11 +52,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Home,
         isActive: true,
       },
-      {
-        title: "Students",
-        url: "#",
-        icon: CircleUserRound,
-      },
+      // {
+      //   title: "Students",
+      //   url: "/students",
+      //   icon: CircleUserRound,
+      // },
     ],
     navSecondary: [
       {

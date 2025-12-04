@@ -74,6 +74,8 @@ export class ClassRepository implements IClassRepository {
   async addStudentRefToClass(classId: string, studentId: string) {
     const classDoc = doc(db, "class", classId);
     const studentDoc = doc(db, "student", studentId);
+
+    // If you’re trying to add a reference but don’t want duplicates, Firestore’s arrayUnion() already handles that
     await updateDoc(classDoc, {
       students: arrayUnion(studentDoc),
     });
