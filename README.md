@@ -1,4 +1,4 @@
-# How to run
+# How to run via terminal/cmd
 
 ## Clone the project first
 
@@ -6,15 +6,15 @@
 
 ## Install dependencies
 
-Change directory
-`cd qr-attendance`
+Change your current directory first `cd qr-attendance`
 
-`npm install`
+run `npm install`
 
-## Run project
+## To run the project
 
-`npm run dev`
-After running the command above, go to `localhost:5173`
+run `npm run dev`
+
+After running the command above, go to `localhost:5173` on your browser
 
 ## Change firebase account
 
