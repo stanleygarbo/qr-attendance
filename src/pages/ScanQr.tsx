@@ -10,37 +10,62 @@ import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Attendance } from "@/models/Attendance";
 
 const ScanQr = () => {
   const params = useParams();
   const classQuery = useClassQuery(params.id || "");
   const attendanceMutations = useAttendanceMutations();
   const attendanceQuery = useAttendanceQuery(params.id || "");
+  const queryClient = useQueryClient();
 
-  const onScan = useCallback(async (result: IDetectedBarcode[]) => {
-    if (authStore.user?.uid && params.id) {
-      let isEnrolled = false;
-      console.log(classQuery.data?.students);
-      for (const student of classQuery.data?.students || []) {
-        if (result[0].rawValue === student.id) {
-          isEnrolled = true;
+  const onScan = useCallback(
+    async (result: IDetectedBarcode[]) => {
+      if (authStore.user?.uid && params.id) {
+        let isEnrolled = false;
+        for (const student of classQuery.data?.students || []) {
+          if (result[0].rawValue === student.id) {
+            isEnrolled = true;
+          }
         }
-      }
-      if (!isEnrolled) {
-        toast.error(
-          "Student with usn:" + result[0].rawValue + " is not enrolled"
-        );
-        return;
-      }
+        if (!isEnrolled) {
+          toast.error(
+            "Student with usn:" + result[0].rawValue + " is not enrolled"
+          );
+          return;
+        }
 
-      attendanceMutations.add.mutate({
-        classId: params.id,
-        studentId: result[0].rawValue,
-        userId: authStore.user.uid,
-        status: "present",
-      });
-    }
-  }, []);
+        const attendances = queryClient.getQueryData([
+          "attendance",
+          params.id,
+        ]) as Attendance[];
+
+        for (const attendance of attendances) {
+          if (
+            dayjs(attendance.createdAt.toDate()).format("MM-DD-YYYY") ===
+              dayjs(new Date()).format("MM-DD-YYYY") &&
+            attendance.studentRef.id === result[0].rawValue
+          ) {
+            toast.error(
+              "Student with usn:" +
+                result[0].rawValue +
+                " is already recorded for today"
+            );
+            return;
+          }
+        }
+
+        attendanceMutations.add.mutate({
+          classId: params.id,
+          studentId: result[0].rawValue,
+          userId: authStore.user.uid,
+          status: "present",
+        });
+      }
+    },
+    [classQuery.data]
+  );
 
   return (
     <div className="grid grid-cols-[300px_1fr] gap-10 mt-4">
@@ -50,7 +75,7 @@ const ScanQr = () => {
             <img src="/loading.svg" className="invert" alt="" />
           </div>
         )}
-        <Scanner onScan={onScan} scanDelay={1} />
+        <Scanner onScan={onScan} scanDelay={200} allowMultiple={false} />
       </div>
       <div className="">
         <h1 className="text-2xl font-bold h-16 rounded-xl flex items-center">
@@ -59,7 +84,8 @@ const ScanQr = () => {
 
         <div className="mt-4 w-[380px]">
           <h2 className="">
-            {attendanceQuery.data ? "QR Logs" : "No attendance record."}
+            {attendanceQuery.data ? "QR Logs" : "No attendance record."}{" "}
+            {classQuery.data?.students?.length}
           </h2>
           {attendanceQuery.data?.map((i) => (
             <div
