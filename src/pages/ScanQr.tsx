@@ -9,6 +9,7 @@ import { QrCode, Trash2 } from "lucide-react";
 import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import { toast } from "sonner";
 
 const ScanQr = () => {
   const params = useParams();
@@ -18,6 +19,20 @@ const ScanQr = () => {
 
   const onScan = useCallback(async (result: IDetectedBarcode[]) => {
     if (authStore.user?.uid && params.id) {
+      let isEnrolled = false;
+      console.log(classQuery.data?.students);
+      for (const student of classQuery.data?.students || []) {
+        if (result[0].rawValue === student.id) {
+          isEnrolled = true;
+        }
+      }
+      if (!isEnrolled) {
+        toast.error(
+          "Student with usn:" + result[0].rawValue + " is not enrolled"
+        );
+        return;
+      }
+
       attendanceMutations.add.mutate({
         classId: params.id,
         studentId: result[0].rawValue,

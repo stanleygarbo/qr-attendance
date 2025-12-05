@@ -4,11 +4,13 @@ import type { Student } from "@/models/Student";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useStudentQuery } from "./useStudentQuery";
 
 const useStudentMutations = () => {
   const { studentService } = useAppServices();
   const queryClient = useQueryClient();
   const params = useParams();
+  const studentQuery = useStudentQuery();
 
   return {
     deletefromClass: useMutation({
@@ -42,15 +44,32 @@ const useStudentMutations = () => {
       async mutationFn(data: Omit<Student, "id" | "createdAt" | "userId">) {
         if (!params.id) throw new Error("Invalid Class");
 
-        const classData = queryClient.getQueryData(["class", params.id]) as
-          | Class
-          | undefined;
+        // const classData = queryClient.getQueryData(["class", params.id]) as
+        //   | Class
+        //   | undefined;
 
-        if (classData) {
-          for (const i of classData.students) {
-            if (i.id === data.usn) {
-              throw new Error(`${data.name} already exists in this class`);
-            }
+        // if (classData && classData.students?.length > 0) {
+        //   for (const i of classData.students) {
+        //     if (i.id === data.usn) {
+        //       throw new Error(`${data.name} already exists in this class`);
+        //     }
+        //   }
+        // }
+        const students = queryClient.getQueryData([
+          "student",
+          params.id,
+        ]) as (Student & {
+          attendance: {
+            date: string;
+            status: string;
+          }[];
+        })[];
+
+        console.log(students);
+
+        for (const s of students) {
+          if (s.usn === data.usn) {
+            throw new Error(`${data.name} already exists in this class`);
           }
         }
 
@@ -59,6 +78,7 @@ const useStudentMutations = () => {
           name: data.name,
           classId: params.id,
         });
+        console.log(data);
 
         return res;
       },
@@ -69,11 +89,17 @@ const useStudentMutations = () => {
         await queryClient.setQueryData(
           ["student", params.id],
           (prev: Student[]) => {
+            for (const student of prev) {
+              if (student.id === data.id) {
+                return prev;
+              }
+            }
             if (prev) {
               return [data, ...prev];
             }
           }
         );
+        studentQuery.refetch();
       },
     }),
   };

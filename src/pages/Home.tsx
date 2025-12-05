@@ -63,6 +63,9 @@ const Home = () => {
                   <div className="text-xs text-muted-foreground">
                     {i.section}
                   </div>
+                  <div className="text-xs text-muted-foreground">
+                    {i.students?.length || "0"} student(s)
+                  </div>
                 </div>
 
                 <ClassDropDownMenu id={i.id}>

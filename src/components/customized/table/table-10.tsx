@@ -119,7 +119,7 @@ export const columns: ColumnDef<
 
       return (
         <div className="flex gap-3">
-          {attendanceArr.map((i) => (
+          {attendanceArr?.map((i) => (
             <div key={i.date}>
               <Tooltip>
                 <TooltipTrigger>{i.status}</TooltipTrigger>
@@ -171,16 +171,11 @@ export const columns: ColumnDef<
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(student.usn)}
-            >
-              Copy USN
-            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <Link to={`?usn=${student.usn}&name=${student.name}`}>
               <DropdownMenuItem>View QR</DropdownMenuItem>
             </Link>
-            <DropdownMenuItem>View attendance details</DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 deletefromClass.mutate({

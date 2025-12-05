@@ -45,6 +45,7 @@ export function LoginForm({
   const handleLoginApple = async () => {
     try {
       await authActions.loginWithApple();
+      navigate("/");
     } catch (err) {
       alert("Failed to login with Apple");
     }
@@ -52,6 +53,7 @@ export function LoginForm({
   const handleLoginGoogle = async () => {
     try {
       await authActions.loginWithGoogle();
+      navigate("/");
     } catch (err) {
       alert("Failed to login with Google");
     }
