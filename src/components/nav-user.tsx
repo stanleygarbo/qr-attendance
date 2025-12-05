@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authActions } from "@/store/authStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function NavUser({
   user,
@@ -27,6 +28,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const queryClient = useQueryClient();
 
   return (
     <SidebarMenu>
@@ -70,7 +72,12 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={authActions.logout}>
+            <DropdownMenuItem
+              onClick={async () => {
+                queryClient.removeQueries();
+                authActions.logout();
+              }}
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>
