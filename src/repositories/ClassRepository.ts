@@ -35,8 +35,8 @@ export class ClassRepository implements IClassRepository {
   async getAll() {
     const q = query(
       collection(db, "class"),
-      where("userId", "==", authStore.user?.uid)
-      // orderBy("createdAt", "desc") // or "asc"
+      where("userId", "==", authStore.user?.uid),
+      orderBy("createdAt", "desc") // or "asc"
     );
     const querySnapshot = await getDocs(q);
 
