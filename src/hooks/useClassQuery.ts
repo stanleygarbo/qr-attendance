@@ -14,7 +14,11 @@ export function useClassQuery(id?: string) {
       if (id) {
         return await classService.getById(id);
       } else {
-        return await classService.getAll();
+        try {
+          return await classService.getAll();
+        } catch (err) {
+          console.log(err);
+        }
       }
     },
     enabled: id ? !!id : true,

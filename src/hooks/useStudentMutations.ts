@@ -1,5 +1,4 @@
 import { useAppServices } from "@/context/AppContext";
-import type { Class } from "@/models/Class";
 import type { Student } from "@/models/Student";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
