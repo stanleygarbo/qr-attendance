@@ -18,6 +18,7 @@ export function useClassQuery(id?: string) {
           return await classService.getAll();
         } catch (err) {
           console.log(err);
+          return null;
         }
       }
     },
