@@ -23,8 +23,8 @@ export const useClassMutations = () => {
       onSuccess(data) {
         queryClient.setQueryData(
           ["class", undefined],
-          (prev: (typeof data)[]) => {
-            return [data, ...prev];
+          (prev: (typeof data)[] | undefined) => {
+            return [data, ...(prev || [])];
           }
         );
       },
